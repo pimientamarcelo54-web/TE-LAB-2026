@@ -1,0 +1,47 @@
+<!-- 
+
+Tecnologias Emergentes de la Programacion
+
+Alumno: Marcelo Nicolás Pimienta Dejesús
+
+Fecha: 30 de Agosto de 2026
+
+-->
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mini App de Noticias - Tailwind</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body data-framework="tailwind">
+
+    <div class="container mx-auto px-4">
+
+        <h1 class="text-3xl font-bold text-center mt-8">
+            Mini App de Noticias
+        </h1>
+
+        <button 
+            id="cargarBtn" 
+            class="bg-blue-600 text-white px-4 py-2 rounded block mx-auto mt-4">
+            Cargar noticias
+        </button>
+
+        <div 
+            id="noticias" 
+            class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
