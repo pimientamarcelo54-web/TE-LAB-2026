@@ -1,0 +1,407 @@
+<!--
+
+Tecnologías Emergentes de la Programación
+Alumno: Marcelo Nicolás Pimienta Dejesús
+Fecha: 7 de Septiembre de 2026
+
+-->
+
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Usuarios</title>
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <!-- jQuery Validation -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+
+  <!-- DataTables -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+  <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 30px;
+      background: white;
+      color: black;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      color: black;
+      margin-bottom: 30px;
+    }
+    .card {
+      background: white;
+      padding: 25px;
+      margin: 20px 0;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border: 1px solid #e9ecef;
+    }
+    h2 {
+      color: black;
+      border-bottom: 2px solid blue;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: black;
+    }
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid white;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+    input:focus {
+      outline: none;
+      border-color: blue;
+      box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+    }
+    input.error {
+      border-color: red;
+    }
+    label.error {
+      color: red;
+      font-size: 0.9em;
+      margin-top: 5px;
+      font-weight: normal;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px 5px 10px 0;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      background: blue;
+      color: white;
+      font-weight: 500;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background: blue;
+    }
+    .alert {
+      padding: 12px;
+      border-radius: 6px;
+      margin: 15px 0;
+    }
+    .alert-success {
+      background: white;
+      color: green;
+      border: 1px solid white;
+    }
+    .alert-danger {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    table {
+      width: 100% !important;
+      margin-top: 15px;
+    }
+    .todo {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+    }
+    .todo h3 {
+      color: #856404;
+      margin-top: 0;
+    }
+    .todo ul {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+    .todo li {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Sistema de Registro de Usuarios</h1>
+    
+
+    <!-- Formulario de Registro -->
+    <div class="card">
+      <h2>Registrar Nuevo Usuario</h2>
+      
+      <form id="form-usuario">
+        <div class="form-group">
+          <label for="nombre">Nombre Completo:</label>
+          <input type="text" id="nombre" name="nombre" placeholder="Mínimo 3 caracteres">
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" placeholder="ejemplo@correo.com">
+        </div>
+
+        <div class="form-group">
+          <label for="edad">Edad:</label>
+          <input type="number" id="edad" name="edad" placeholder="Entre 18 y 99 años" min="18" max="99">
+        </div>
+
+        <button type="submit">Registrar Usuario</button>
+        <button type="button" id="limpiar-form">Limpiar Formulario</button>
+      </form>
+
+      <div id="mensaje" style="display: none;"></div>
+    </div>
+
+    <!-- Tabla de Usuarios -->
+    <div class="card">
+      <h2>Lista de Usuarios Registrados</h2>
+      
+      <table id="tabla-usuarios" class="display" style="width:100%">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Edad</th>
+            <th>Fecha Registro</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="5" style="text-align:center; color:#6c757d; font-style:italic;">
+              No hay usuarios registrados. Completa el formulario para agregar usuarios.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    $(document).ready(function() {
+      // Array para almacenar usuarios (simulando base de datos)
+      let usuarios = [];
+      let contadorId = 1;
+      let tabla = null;
+      const usuariosGuardados = localStorage.getItem("usuarios");
+
+        if (usuariosGuardados) {
+            usuarios = JSON.parse(usuariosGuardados);
+        }
+       if (usuarios.length > 0) {
+         contadorId = Math.max(...usuarios.map(usuario => usuario.id)) + 1;
+        }
+      // TODO 1: Configurar validación del formulario
+      // Usar jQuery Validation con las siguientes reglas:
+      // - nombre: obligatorio, mínimo 3 caracteres
+      // - email: obligatorio, formato email válido
+      // - edad: obligatorio, número entre 18 y 99
+      $("#form-usuario").validate({
+    rules: {
+        nombre: {
+            required: true,
+            minlength: 3
+        },
+
+        email: {
+            required: true,
+            email: true
+        },
+
+        edad: {
+            required: true,
+            min: 18,
+            max: 99
+        }
+    },
+
+    messages: {
+        nombre: {
+            required: "El nombre es obligatorio",
+            minlength: "El nombre debe tener al menos 3 caracteres"
+        },
+
+        email: {
+            required: "El email es obligatorio",
+            email: "Ingrese un email válido"
+        },
+
+        edad: {
+            required: "La edad es obligatoria",
+            min: "La edad mínima es 18 años",
+            max: "La edad máxima es 99 años"
+        }
+    },
+
+    submitHandler: function(form) {
+        registrarUsuario();
+        return false;
+    }
+});
+      // EJEMPLO DE ESTRUCTURA:
+      // $("#form-usuario").validate({
+      //   rules: {
+      //     // Agregar reglas aquí
+      //   },
+      //   messages: {
+      //     // Agregar mensajes personalizados aquí
+      //   },
+      //   submitHandler: function(form) {
+      //     registrarUsuario();
+      //     return false;
+      //   }
+      // });
+
+      // TODO 2: Implementar función registrarUsuario()
+      function registrarUsuario() {
+        // Obtener valores del formulario
+        const nombre = $("#nombre").val();
+        const email = $("#email").val();
+        const edad = parseInt($("#edad").val());
+        
+        if (emailExiste(email)) {
+            mostrarMensaje("El email ya está registrado.", "danger");
+            return;
+        }
+
+        setTimeout(function() {
+    
+            const usuario = {
+                id: contadorId++,
+                nombre: nombre,
+                email: email,
+                edad: edad,
+                fechaRegistro: new Date().toLocaleDateString('es-ES')
+            };
+            usuarios.push(usuario);
+            localStorage.setItem("usuarios", JSON.stringify(usuarios));
+            actualizarTabla();
+
+            $("#form-usuario")[0].reset();
+
+            mostrarMensaje("Usuario registrado correctamente.", "success");
+
+        }, 1000);
+        // TODO: Validar que el email no exista (usar función emailExiste)
+        
+        // TODO: Simular delay de AJAX con setTimeout
+        
+        // TODO: Crear objeto usuario con:
+        // - id: contadorId++
+        // - nombre, email, edad
+        // - fechaRegistro: new Date().toLocaleDateString('es-ES')
+        
+        // TODO: Agregar usuario al array 'usuarios'
+        
+        // TODO: Actualizar la DataTable
+        
+        // TODO: Limpiar formulario y mostrar mensaje de éxito
+      }
+
+      // TODO 3: Implementar función emailExiste()
+      function emailExiste(email) {
+        // Verificar si el email ya existe en el array usuarios
+        // Retornar true si existe, false si no existe
+        return usuarios.some(function(usuario) {
+            return usuario.email === email;
+        });
+    }
+
+      // TODO 4: Inicializar DataTable
+      function inicializarDataTable() {
+        // Crear DataTable con:
+        // - data: usuarios
+        // - columns: id, nombre, email, edad, fechaRegistro
+        // - pageLength: 5
+        // - language: configuración en español
+
+            tabla = $("#tabla-usuarios").DataTable({
+        data: usuarios,
+
+        columns: [
+            { data: "id" },
+            { data: "nombre" },
+            { data: "email" },
+            { data: "edad" },
+            { data: "fechaRegistro" }
+        ],
+
+        pageLength: 5,
+
+        language: {
+            lengthMenu: "Mostrar _MENU_ registros",
+            zeroRecords: "No se encontraron usuarios",
+            info: "Mostrando _START_ a _END_ de _TOTAL_ usuarios",
+            infoEmpty: "No hay usuarios registrados",
+            search: "Buscar:",
+            paginate: {
+                first: "Primero",
+                last: "Último",
+                next: "Siguiente",
+                previous: "Anterior"
+            }
+        }
+    });
+
+
+      }
+
+      // TODO 5: Implementar función actualizarTabla()
+      function actualizarTabla() {
+        // Actualizar los datos de la DataTable
+        // Usar: tabla.clear().rows.add(usuarios).draw();
+            tabla.clear().rows.add(usuarios).draw();
+            
+        }
+
+      // Función auxiliar para mostrar mensajes (YA IMPLEMENTADA)
+      function mostrarMensaje(texto, tipo) {
+        const claseAlert = tipo === "success" ? "alert-success" : "alert-danger";
+        
+        $("#mensaje")
+          .removeClass("alert-success alert-danger")
+          .addClass(`alert ${claseAlert}`)
+          .html(texto)
+          .show();
+
+        if (tipo === "success") {
+          setTimeout(() => $("#mensaje").hide(), 3000);
+        }
+      }
+
+      // Limpiar formulario (YA IMPLEMENTADO)
+      $("#limpiar-form").click(function() {
+        $("#form-usuario")[0].reset();
+        $("#mensaje").hide();
+      });
+
+      // TODO 6: Llamar a inicializarDataTable() al cargar la página
+      
+      // BONUS: Implementar localStorage
+      // - Guardar usuarios en localStorage cuando se agregue uno nuevo
+      // - Cargar usuarios desde localStorage al iniciar la página
+      inicializarDataTable();
+    });
+  </script>
+</body>
+</html>
